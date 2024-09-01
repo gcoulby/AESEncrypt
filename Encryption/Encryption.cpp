@@ -16,13 +16,15 @@ std::string Encryption::encrypt(std::string iv, std::string key, Mode mode)
 * @param input The input vector of unsigned chars to encrypt
 * @param key The key vector of unsigned chars to use for encryption
 */
-std::vector<std::vector<unsigned char>> Encryption::encrypt(std::vector<unsigned char>& input, std::vector<unsigned char>& key, Mode mode)
+std::vector<unsigned char> Encryption::encrypt(std::vector<unsigned char>& input, std::vector<unsigned char>& key, Mode mode)
 {
 	std::vector<std::vector<unsigned char>> keySchedule = keyExpansion(key, mode);
 	std::vector<std::vector<unsigned char>> state = convertToMatrix(input);
 
 	cipher(state, keySchedule, mode);
-	return state;
+
+    std::vector<unsigned char> ret = convertToVector(state);
+	return ret;
 }
 
 
@@ -30,6 +32,23 @@ std::string Encryption::decrypt(std::string iv, std::string key, Mode mode)
 {
     //not yet implemented
     return "The quick brown fox jumped over the lazy dog";
+}
+
+/**
+* Dencrypt the input string using the given key and mode
+*
+* @param input The input vector of unsigned chars to encrypt
+* @param key The key vector of unsigned chars to use for encryption
+*/
+std::vector<unsigned char> Encryption::decrypt(std::vector<unsigned char>& input, std::vector<unsigned char>& key, Mode mode)
+{
+    std::vector<std::vector<unsigned char>> keySchedule = keyExpansion(key, mode);
+    std::vector<std::vector<unsigned char>> state = convertToMatrix(input);
+
+    invCipher(state, keySchedule, mode);
+
+    std::vector<unsigned char> ret = convertToVector(state);
+    return ret;
 }
 
 /**
@@ -84,6 +103,39 @@ void Encryption::cipher(std::vector<std::vector<unsigned char>>& state, std::vec
     subBytes(state);
     shiftRows(state);
     addRoundKey(state, keySchedule, Nr);
+}
+
+/**
+* Generate Inverse Cipher Text for AES encryption
+* 
+* @brief The function performs the Inverse Cipher Text generation for AES encryption using the input vector of unsigned chars,
+* the number of rounds to perform, the key schedule to use for the encryption, and the mode to use for the encryption
+* 
+* @param state The state to use for the encryption
+* @param keySchedule The key schedule to use for the encryption
+* @param mode The mode to use for the encryption (AES128, AES192, or AES256)
+*/
+void Encryption::invCipher(std::vector<std::vector<unsigned char>>& state, std::vector<std::vector<unsigned char>>& keySchedule, Mode mode)
+{
+    int Nr = mode;
+    int round = Nr;
+
+#ifdef _DEBUG
+    std::cout << "Start of Round: " << std::endl;
+	printMatrix(state);
+#endif
+
+	addRoundKey(state, keySchedule, round);
+	round--;
+	for (round; round > 0; round--) {
+		invShiftRows(state);
+		invSubBytes(state);
+		addRoundKey(state, keySchedule, round);
+		invMixColumns(state);
+	}
+	invShiftRows(state);
+	invSubBytes(state);
+	addRoundKey(state, keySchedule, 0);
 }
 
 
@@ -185,6 +237,63 @@ void Encryption::addRoundKey(std::vector<std::vector<unsigned char>>& state, std
 #endif
 }
 
+
+/**
+* Shift the rows in the state
+*
+* @brief The function shifts the rows in the state by a certain number of bytes
+* The first row is not shifted
+* The second row is shifted by 1 byte to the left
+* The third row is shifted by 2 bytes to the left
+* The fourth row is shifted by 3 bytes to the left
+*
+* @param state The state to shift the rows for
+*/
+void Encryption::shiftRows(std::vector<std::vector<unsigned char>>& state)
+{
+    std::vector<unsigned char> temp(4);
+    for (int row = 1; row < 4; row++) {
+        for (int col = 0; col < 4; col++) {
+            temp[col] = state[(col + row) % 4][row];
+        }
+        for (int col = 0; col < 4; col++) {
+            state[col][row] = temp[col];
+        }
+    }
+
+#ifdef _DEBUG
+    std::cout << "Aftaer Shift rows: " << std::endl;
+    printMatrix(state);
+#endif
+}
+
+/**
+* Inverse Shift the rows in the state
+* 
+* @brief the inverse of shiftRows (see above)
+* 
+* @param state The state to shift the rows for
+*/
+void Encryption::invShiftRows(std::vector<std::vector<unsigned char>>& state)
+{
+    std::vector<unsigned char> temp(4);
+	for (int row = 1; row < 4; row++) {
+		for (int col = 0; col < 4; col++) {
+			temp[(col + row) % 4] = state[col][row];
+		}
+		for (int col = 0; col < 4; col++) {
+			state[col][row] = temp[col];
+		}
+	}
+
+#ifdef _DEBUG
+    std::cout << "After Inv Shift rows: " << std::endl;
+    printMatrix(state);
+#endif
+}
+
+
+
 /**
 * Substitute the bytes in the state using the SBox
 * 
@@ -212,31 +321,23 @@ void Encryption::subBytes(std::vector<std::vector<unsigned char>>& state)
 }
 
 /**
-* Shift the rows in the state
+* Inverse Substitute the bytes in the state using the inverse SBox
 * 
-* @brief The function shifts the rows in the state by a certain number of bytes
-* The first row is not shifted
-* The second row is shifted by 1 byte to the left
-* The third row is shifted by 2 bytes to the left
-* The fourth row is shifted by 3 bytes to the left
+* @brief The inverse of subBytes (see above)
 * 
-* @param state The state to shift the rows for
+* @param state The state to substitute the bytes for
 */
-void Encryption::shiftRows(std::vector<std::vector<unsigned char>>& state)
+void Encryption::invSubBytes(std::vector<std::vector<unsigned char>>& state)
 {
-    std::vector<unsigned char> temp(4);
-    for (int row = 1; row < 4; row++) {
-        for (int col = 0; col < 4; col++) {
-            temp[col] = state[(col + row) % 4][row];
-        }
-        for (int col = 0; col < 4; col++) {
-            state[col][row] = temp[col];
-        }
-    }
+	for (int col = 0; col < 4; col++) {
+		for (int row = 0; row < 4; row++) {
+			state[col][row] = invSubByte(state[col][row]);
+		}
+	}
 
 #ifdef _DEBUG
-    std::cout << "Aftaer Shift rows: " << std::endl;
-    printMatrix(state);
+	std::cout << "After Inv Sub bytes: " << std::endl;
+	printMatrix(state);
 #endif
 }
 
@@ -279,19 +380,32 @@ void Encryption::mixColumns(std::vector<std::vector<unsigned char>>& state)
 #endif
 }
 
-void Encryption::invSubBytes(std::vector<std::vector<unsigned char>>& state)
-{
-    
-}
 
-void Encryption::invShiftRows(std::vector<std::vector<unsigned char>>& state)
-{
-    
-}
-
+/**
+* Inverse Mix the columns in the state
+* 
+* @brief The inverse of mixColumns (see above)
+* 
+* @param state The state to mix the columns for
+*/
 void Encryption::invMixColumns(std::vector<std::vector<unsigned char>>& state)
 {
-    
+    unsigned char temp[4];
+	for (int col = 0; col < 4; col++) {  // iterate over each column
+		temp[0] = xTimes(state[col][0], 0x0E) ^ xTimes(state[col][1], 0x0B) ^ xTimes(state[col][2], 0x0D) ^ xTimes(state[col][3], 0x09);
+		temp[1] = xTimes(state[col][0], 0x09) ^ xTimes(state[col][1], 0x0E) ^ xTimes(state[col][2], 0x0B) ^ xTimes(state[col][3], 0x0D);
+		temp[2] = xTimes(state[col][0], 0x0D) ^ xTimes(state[col][1], 0x09) ^ xTimes(state[col][2], 0x0E) ^ xTimes(state[col][3], 0x0B);
+		temp[3] = xTimes(state[col][0], 0x0B) ^ xTimes(state[col][1], 0x0D) ^ xTimes(state[col][2], 0x09) ^ xTimes(state[col][3], 0x0E);
+
+		for (int row = 0; row < 4; row++) {
+			state[col][row] = temp[row];
+		}
+	}
+
+#ifdef _DEBUG
+    std::cout << "After Inv Mix columns: " << std::endl;
+	printMatrix(state);
+#endif
 }
 
 /**
@@ -426,6 +540,21 @@ std::vector<std::vector<unsigned char>> Encryption::convertToMatrix(std::vector<
     return ret;
 }
 
+std::vector<unsigned char> Encryption::convertToVector(std::vector<std::vector<unsigned char>> in)
+{
+    std::vector<unsigned char> ret(16);
+	for (int col = 0; col < 4; col++) {
+		for (int row = 0; row < 4; row++) {
+			ret[col * 4 + row] = in[col][row];
+		}
+	}
+	return ret;
+
+
+}
+
+
+
 /**
 * Get the value from the SBox for the given byte.
 * 
@@ -457,7 +586,12 @@ unsigned char Encryption::subByte(unsigned char byte)
 */
 unsigned char Encryption::invSubByte(unsigned char byte)
 {
-	return 0;
+	//split byte into two parts
+	unsigned char upper = (byte >> 4) & 0x0F;
+	unsigned char lower = byte & 0x0F;
+
+	//get the new value from the inverse SBox
+	return InvSBox[upper * 16 + lower];
 }
 
 

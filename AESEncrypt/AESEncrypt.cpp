@@ -13,7 +13,23 @@ int main()
 	std::vector<unsigned char> key = { 0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c };
 
 
-	std::vector<std::vector<unsigned char>> cipher = Encryption::encrypt(input, key, AES128);
+	std::vector<unsigned char> cipher = Encryption::encrypt(input, key, AES128);
+
+	std::cout << "Cipher: ";
+	for (size_t i = 0; i < cipher.size(); ++i)
+	{
+		std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)cipher[i] << " ";
+	}
+	std::cout << std::endl;
+
+	std::vector<unsigned char> invCipher = Encryption::decrypt(cipher, key, AES128);
+
+	std::cout << "InvCipher: ";
+	for (size_t i = 0; i < invCipher.size(); ++i)
+	{
+		std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)invCipher[i] << " ";
+	}
+	std::cout << std::endl;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

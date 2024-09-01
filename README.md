@@ -36,13 +36,13 @@ To install the program, download the source code from the repository. Open the s
 
 ### Features
 
-✅ Functions for encrypting byte arrays using the AES algorithm
-✅ Initial test cases for the AES algorithm Encryption
+- ✅ Functions for encrypting byte arrays using the AES algorithm
+- ✅ Initial test cases for the AES algorithm Encryption
+- ✅ Inverse Functions for decrypting byte arrays using the AES algorithm
+- ✅ Initial test cases for the AES algorithm Decryption
 
 #### To Do
-❎ Inverse Functions for decrypting byte arrays using the AES algorithm
-❎ Initial test cases for the AES algorithm Decryption
-❎ Test cases for the AES algorithm using the NIST test vectors
+- ❎ Test cases for the AES algorithm using the NIST test vectors
 
 ### How to Contribute
 
@@ -61,4 +61,4 @@ If you find this project useful, and wish to use the code in your own projects, 
 
 - [AES Algorithm](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197-upd1.pdf)
 - [NIST Test Vectors](https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/aes/aesavs.pdf)
-- [Computerphile Video](https://www.youtube.com/watch?v=O4xNJsjtN6E)]
+- [Computerphile Video](https://www.youtube.com/watch?v=O4xNJsjtN6E)
