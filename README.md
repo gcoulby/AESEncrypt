@@ -56,7 +56,6 @@ Should you wish to work on this project, I encourage you to follow the Developme
 If you find this project useful, and wish to use the code in your own projects, you are free to do so.
 
 
-
 ### References
 
 - [AES Algorithm](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197-upd1.pdf)

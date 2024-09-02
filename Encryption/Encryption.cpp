@@ -262,7 +262,7 @@ void Encryption::shiftRows(std::vector<std::vector<unsigned char>>& state)
     }
 
 #ifdef _DEBUG
-    std::cout << "Aftaer Shift rows: " << std::endl;
+    std::cout << "After Shift rows: " << std::endl;
     printMatrix(state);
 #endif
 }
